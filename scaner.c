@@ -347,7 +347,6 @@ struct loader * front_queue_loaders(struct queue_loaders **head){
     }
     return (*head)->loader;
 }
-
 void pop_queue_loaders(struct queue_loaders **head){
     if(*head == NULL){
         return;
