@@ -35,6 +35,7 @@ struct scroll_win_user *scroll_win_user(int NLINES, int NCOLS, int y, int x)
     wclear(scroll_win_user->win);
 	wrefresh(scroll_win_user->win);
     keypad(scroll_win_user->win, TRUE);
+    wbkgdset(scroll_win_user->win, COLOR_PAIR(1));
     return scroll_win_user;
 }
 
@@ -48,6 +49,7 @@ struct scroll_win_table *scroll_win_table(int NLINES, int NCOLS, int y, int x)
     wclear(scroll_win_table->win);
 	wrefresh(scroll_win_table->win);
     keypad(scroll_win_table->win, TRUE);
+    wbkgdset(scroll_win_table->win, COLOR_PAIR(1));
     return scroll_win_table;
 }
 
@@ -59,11 +61,13 @@ struct win_progress_bar *win_progress_bar(int NLINES, int NCOLS, int y, int x)
     wclear(win_progress_bar->win);
 	wrefresh(win_progress_bar->win);
     keypad(win_progress_bar->win, TRUE);
+    wbkgdset(win_progress_bar->win, COLOR_PAIR(1));
     return win_progress_bar;
 }
 
 void draw_win_user(struct scroll_win_user *win)
 {
+    wattron(win->win,COLOR_PAIR(2));
     wclear(win->win);
     wmove(win->win,0,0);
     if (win->head != NULL)
@@ -74,9 +78,9 @@ void draw_win_user(struct scroll_win_user *win)
         {
             if (i==win->step&&win->is_active)
             {
-                wattron(win->win,COLOR_PAIR(1));
-            } else {
                 wattron(win->win,COLOR_PAIR(2));
+            } else {
+                wattron(win->win,COLOR_PAIR(1));
             }
             wprintw(win->win,"%d\n",get_user(&(win->head),i)->i);
         }
@@ -90,6 +94,7 @@ void draw_win_user(struct scroll_win_user *win)
 }
 void draw_win_table(struct scroll_win_table *win)
 {
+    wattron(win->win,COLOR_PAIR(2));
     wclear(win->win);
     wmove(win->win,0,0);
     if (win->head != NULL)
@@ -98,11 +103,11 @@ void draw_win_table(struct scroll_win_table *win)
         int count = size_file_name_list(&(win->head));
         for (int i = 0; i < count; i++)
         {
-            if (i==win->step&&win->is_active)
+            if (i==win->step && win->is_active)
             {
-                wattron(win->win,COLOR_PAIR(1));
-            } else {
                 wattron(win->win,COLOR_PAIR(2));
+            } else {
+                wattron(win->win,COLOR_PAIR(1));
             }
             wprintw(win->win,"%d\n",get_file_name(&(win->head),i)->i);
         }
@@ -113,7 +118,12 @@ void draw_win_table(struct scroll_win_table *win)
 }
 void draw_win_progress_bar(struct win_progress_bar *win)
 {
+    wattron(win->win,COLOR_PAIR(2));
     wclear(win->win);
+    wmove(win->win,0,0);
+    if (front_queue_loaders(&(win->queue)) != NULL){
+
+    }
 }
 
 int main(int argc, char const *argv[])
@@ -128,7 +138,7 @@ int main(int argc, char const *argv[])
     cbreak();
     noecho();
     keypad(stdscr, TRUE);
-
+    curs_set(0);
     /* инициализация цветовой палитры */
     if (!has_colors())
     {
@@ -216,6 +226,7 @@ int main(int argc, char const *argv[])
                 break;
 
             case 9://TAB
+            case KEY_RIGHT:
                 win_user->is_active = false;
                 win_table->is_active = true;
                 break;
@@ -255,6 +266,7 @@ int main(int argc, char const *argv[])
             {
 
             case 9: //TAB
+            case KEY_LEFT:
                 win_user->is_active = true;
                 win_table->is_active = false;
                 break;
@@ -291,7 +303,7 @@ int main(int argc, char const *argv[])
         draw_win_table(win_table);
         draw_win_progress_bar(win_progress);
     }
-      // завершение программы
+    // завершение программы
     delwin(win_table->win);
     delwin(win_user->win);
     delwin(win_progress->win);
